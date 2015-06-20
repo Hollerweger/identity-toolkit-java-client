@@ -1,17 +1,17 @@
 /*
  * Copyright 2014 Google Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package com.google.identitytoolkit;
@@ -46,9 +46,10 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * Google Identity Toolkit client library. This class is the only interface that third party
- * developers needs to know to integrate Gitkit with their backend server. Main features are
- * Gitkit token verification and Gitkit remote API wrapper.
+ * Google Identity Toolkit client library. This class is the only interface that
+ * third party developers needs to know to integrate Gitkit with their backend
+ * server. Main features are Gitkit token verification and Gitkit remote API
+ * wrapper.
  */
 public class GitkitClient {
 
@@ -64,56 +65,48 @@ public class GitkitClient {
 
   /**
    * Constructs a Gitkit client.
-   *
-   * @param clientId Google oauth2 web application client id. Audience in Gitkit token must match
-   *                 this client id.
+   * 
+   * @param clientId Google oauth2 web application client id. Audience in Gitkit
+   *          token must match this client id.
    * @param serviceAccountEmail Google service account email.
    * @param keyStream Google service account private p12 key stream.
    * @param widgetUrl Url of the Gitkit widget, must starting with /.
-   * @param cookieName Gitkit cookie name. Used to extract Gitkit token from incoming http request.
-   * @param httpSender Concrete http sender when Gitkit client needs to call Gitkit remote API.
+   * @param cookieName Gitkit cookie name. Used to extract Gitkit token from
+   *          incoming http request.
+   * @param httpSender Concrete http sender when Gitkit client needs to call
+   *          Gitkit remote API.
    * @param serverApiKey Server side API key in Google Developer Console.
    */
-  public GitkitClient(
-      String clientId,
-      String serviceAccountEmail,
-      InputStream keyStream,
-      String widgetUrl,
-      String cookieName,
-      HttpSender httpSender,
-      String serverApiKey) {
-    rpcHelper = new RpcHelper(httpSender, GITKIT_API_BASE, serviceAccountEmail, keyStream);
-    tokenHelper = new JsonTokenHelper(clientId, rpcHelper, serverApiKey);
+  public GitkitClient(String clientId, String serviceAccountEmail, InputStream keyStream,
+      String widgetUrl, String cookieName, HttpSender httpSender, String serverApiKey) {
+    this.rpcHelper = new RpcHelper(httpSender, GITKIT_API_BASE, serviceAccountEmail, keyStream);
+    this.tokenHelper = new JsonTokenHelper(clientId, this.rpcHelper, serverApiKey);
     this.widgetUrl = widgetUrl;
     this.cookieName = cookieName;
   }
 
   /**
    * Constructs a Gitkit client from a JSON config file
-   *
+   * 
    * @param configPath Path to JSON configuration file
    * @return Gitkit client
    */
   public static GitkitClient createFromJson(String configPath) throws JSONException, IOException {
     JSONObject configData =
-        new JSONObject(
-            StandardCharsets.UTF_8.decode(
-                ByteBuffer.wrap(Files.readAllBytes(Paths.get(configPath))))
-                .toString());
+        new JSONObject(StandardCharsets.UTF_8.decode(
+            ByteBuffer.wrap(Files.readAllBytes(Paths.get(configPath)))).toString());
 
-    return new GitkitClient.Builder()
-         .setGoogleClientId(configData.getString("clientId"))
-         .setServiceAccountEmail(configData.getString("serviceAccountEmail"))
-         .setKeyStream(new FileInputStream(configData.getString("serviceAccountPrivateKeyFile")))
-         .setWidgetUrl(configData.getString("widgetUrl"))
-         .setCookieName(configData.getString("cookieName"))
-         .setServerApiKey(configData.optString("serverApiKey", null))
-         .build();
+    return new GitkitClient.Builder().setGoogleClientId(configData.getString("clientId"))
+        .setServiceAccountEmail(configData.getString("serviceAccountEmail")).setKeyStream(
+            new FileInputStream(configData.getString("serviceAccountPrivateKeyFile")))
+        .setWidgetUrl(configData.getString("widgetUrl")).setCookieName(
+            configData.getString("cookieName")).setServerApiKey(
+            configData.optString("serverApiKey", null)).build();
   }
 
   /**
    * Verifies a Gitkit token.
-   *
+   * 
    * @param token token string to be verified.
    * @return the JSON object for the payload of the token if the token is valid.
    * @throws GitkitClientException if token has invalid signature
@@ -123,7 +116,7 @@ public class GitkitClient {
       return null;
     }
     try {
-      return tokenHelper.verifyAndDeserialize(token).getPayloadAsJsonObject();
+      return this.tokenHelper.verifyAndDeserialize(token).getPayloadAsJsonObject();
     } catch (SignatureException e) {
       throw new GitkitClientException(e);
     }
@@ -131,67 +124,84 @@ public class GitkitClient {
 
   /**
    * Verifies a Gitkit token.
-   *
+   * 
    * @param token token string to be verified.
    * @return Gitkit user if token is valid.
    * @throws GitkitClientException if token has invalid signature
    */
   public GitkitUser validateToken(String token) throws GitkitClientException {
-    JsonObject jsonToken = validateTokenToJson(token);
+    JsonObject jsonToken = this.validateTokenToJson(token);
     if (jsonToken == null) {
       return null;
     }
-    return new GitkitUser()
-        .setLocalId(jsonToken.get(JsonTokenHelper.ID_TOKEN_USER_ID).getAsString())
-        .setEmail(jsonToken.get(JsonTokenHelper.ID_TOKEN_EMAIL).getAsString())
-        .setCurrentProvider(jsonToken.has(JsonTokenHelper.ID_TOKEN_PROVIDER)
-            ? jsonToken.get(JsonTokenHelper.ID_TOKEN_PROVIDER).getAsString()
-            : null);
+    return new GitkitUser().setLocalId(
+        jsonToken.get(JsonTokenHelper.ID_TOKEN_USER_ID).getAsString())
+
+    .setEmail(jsonToken.get(JsonTokenHelper.ID_TOKEN_EMAIL).getAsString())
+
+    .setEmailVerified(
+        jsonToken.has(JsonTokenHelper.ID_TOKEN_EMAIL_VERIFIED) ? jsonToken.get(
+            JsonTokenHelper.ID_TOKEN_PROVIDER).getAsBoolean() : null)
+
+    .setDisplayName(
+        jsonToken.has(JsonTokenHelper.ID_TOKEN_DISPLAY_NAME) ? jsonToken.get(
+            JsonTokenHelper.ID_TOKEN_DISPLAY_NAME).getAsString() : null)
+
+    .setIssued(jsonToken.get(JsonTokenHelper.ID_TOKEN_ISSUED).getAsInt())
+
+    .setExpires(jsonToken.get(JsonTokenHelper.ID_TOKEN_EXPIRES).getAsInt())
+
+    .setPhotoUrl(
+        jsonToken.has(JsonTokenHelper.ID_TOKEN_PHOTO_URL) ? jsonToken.get(
+            JsonTokenHelper.ID_TOKEN_PHOTO_URL).getAsString() : null)
+
+    .setCurrentProvider(
+        jsonToken.has(JsonTokenHelper.ID_TOKEN_PROVIDER) ? jsonToken.get(
+            JsonTokenHelper.ID_TOKEN_PROVIDER).getAsString() : null);
   }
 
   /**
    * Verifies Gitkit token in http request.
-   *
+   * 
    * @param request http request
    * @return Gitkit user if valid token is found in the request.
    * @throws GitkitClientException if there is token but signature is invalid
    */
-  public GitkitUser validateTokenInRequest(HttpServletRequest request)
-      throws GitkitClientException {
+  public GitkitUser validateTokenInRequest(HttpServletRequest request) throws GitkitClientException {
     Cookie[] cookies = request.getCookies();
-    if (cookieName == null || cookies == null) {
+    if (this.cookieName == null || cookies == null) {
       return null;
     }
 
     for (Cookie cookie : cookies) {
-      if (cookieName.equals(cookie.getName())) {
-        return validateToken(cookie.getValue());
+      if (this.cookieName.equals(cookie.getName())) {
+        return this.validateToken(cookie.getValue());
       }
     }
     return null;
   }
 
   /**
-   * Gets user info from GITkit service using Gitkit token. Can be used to verify a Gitkit token
-   * remotely.
-   *
+   * Gets user info from GITkit service using Gitkit token. Can be used to
+   * verify a Gitkit token remotely.
+   * 
    * @param token the gitkit token.
    * @return Gitkit user info if token is valid.
    * @throws GitkitClientException if request is invalid
    * @throws GitkitServerException for Gitkit server error
    */
-  public GitkitUser getUserByToken(String token)
-      throws GitkitClientException, GitkitServerException {
-    GitkitUser gitkitUser = validateToken(token);
+  public GitkitUser getUserByToken(String token) throws GitkitClientException,
+      GitkitServerException {
+    GitkitUser gitkitUser = this.validateToken(token);
     if (gitkitUser == null) {
       throw new GitkitClientException("invalid gitkit token");
     }
     try {
-      JSONObject result = rpcHelper.getAccountInfo(token);
-        JSONObject jsonUser = result.getJSONArray("users").getJSONObject(0);
-        return jsonToUser(jsonUser)
-            // gitkit server does not return current provider
-            .setCurrentProvider(gitkitUser.getCurrentProvider());
+      JSONObject result = this.rpcHelper.getAccountInfo(token);
+      JSONObject jsonUser = result.getJSONArray("users").getJSONObject(0);
+      return this.jsonToUser(jsonUser)
+      // gitkit server does not return current provider
+          .setCurrentProvider(gitkitUser.getCurrentProvider());
     } catch (JSONException e) {
       throw new GitkitServerException(e);
     }
@@ -199,18 +209,18 @@ public class GitkitClient {
 
   /**
    * Gets user info given an email.
-   *
+   * 
    * @param email user email.
    * @return Gitkit user info.
    * @throws GitkitClientException if request is invalid
    * @throws GitkitServerException for Gitkit server error
    */
-  public GitkitUser getUserByEmail(String email)
-      throws GitkitClientException, GitkitServerException {
+  public GitkitUser getUserByEmail(String email) throws GitkitClientException,
+      GitkitServerException {
     Preconditions.checkNotNull(email);
     try {
-      JSONObject result = rpcHelper.getAccountInfoByEmail(email);
-      return jsonToUser(result.getJSONArray("users").getJSONObject(0));
+      JSONObject result = this.rpcHelper.getAccountInfoByEmail(email);
+      return this.jsonToUser(result.getJSONArray("users").getJSONObject(0));
     } catch (JSONException e) {
       throw new GitkitServerException(e);
     }
@@ -218,36 +228,37 @@ public class GitkitClient {
 
   /**
    * Gets user info given a user id.
-   *
+   * 
    * @param localId user identifier at Gitkit.
    * @return Gitkit user info.
    * @throws GitkitClientException if request is invalid
    * @throws GitkitServerException for Gitkit server error
    */
-  public GitkitUser getUserByLocalId(String localId)
-      throws GitkitClientException, GitkitServerException {
+  public GitkitUser getUserByLocalId(String localId) throws GitkitClientException,
+      GitkitServerException {
     Preconditions.checkNotNull(localId);
     try {
-      JSONObject result = rpcHelper.getAccountInfoById(localId);
-      return jsonToUser(result.getJSONArray("users").getJSONObject(0));
+      JSONObject result = this.rpcHelper.getAccountInfoById(localId);
+      return this.jsonToUser(result.getJSONArray("users").getJSONObject(0));
     } catch (JSONException e) {
       throw new GitkitServerException(e);
     }
   }
 
   /**
-   * Gets all user info of this web site. Underlying requests are send with default pagination size.
-   *
+   * Gets all user info of this web site. Underlying requests are send with
+   * default pagination size.
+   * 
    * @return lazy iterator over all user accounts.
    */
   public Iterator<GitkitUser> getAllUsers() {
-    return getAllUsers(null);
+    return this.getAllUsers(null);
   }
 
   /**
-   * Gets all user info of this web site. Underlying requests are paginated and send on demand with
-   * given size.
-   *
+   * Gets all user info of this web site. Underlying requests are paginated and
+   * send on demand with given size.
+   * 
    * @param resultsPerRequest pagination size
    * @return lazy iterator over all user accounts.
    */
@@ -259,12 +270,12 @@ public class GitkitClient {
       @Override
       protected Iterator<GitkitUser> getNextResults() {
         try {
-          JSONObject response = rpcHelper.downloadAccount(nextPageToken, resultsPerRequest);
-          nextPageToken = response.has("nextPageToken")
-              ? response.getString("nextPageToken")
-              : null;
+          JSONObject response =
+              GitkitClient.this.rpcHelper.downloadAccount(this.nextPageToken, resultsPerRequest);
+          this.nextPageToken =
+              response.has("nextPageToken") ? response.getString("nextPageToken") : null;
           if (response.has("users")) {
-            return jsonToList(response.getJSONArray("users")).iterator();
+            return GitkitClient.this.jsonToList(response.getJSONArray("users")).iterator();
           }
         } catch (JSONException e) {
           logger.warning(e.getMessage());
@@ -273,23 +284,22 @@ public class GitkitClient {
         } catch (GitkitClientException e) {
           logger.warning(e.getMessage());
         }
-        return ImmutableSet.<GitkitUser>of().iterator();
+        return ImmutableSet.<GitkitUser> of().iterator();
       }
     };
   }
 
   /**
    * Updates a user info at Gitkit server.
-   *
+   * 
    * @param user user info to be updated.
    * @return the updated user info
    * @throws GitkitClientException for invalid request
    * @throws GitkitServerException for server error
    */
-  public GitkitUser updateUser(GitkitUser user)
-      throws GitkitClientException, GitkitServerException {
+  public GitkitUser updateUser(GitkitUser user) throws GitkitClientException, GitkitServerException {
     try {
-      return jsonToUser(rpcHelper.updateAccount(user));
+      return this.jsonToUser(this.rpcHelper.updateAccount(user));
     } catch (JSONException e) {
       throw new GitkitServerException(e);
     }
@@ -297,9 +307,9 @@ public class GitkitClient {
 
   /**
    * Uploads multiple user accounts to Gitkit server.
-   *
-   * @param hashAlgorithm hash algorithm. Supported values are HMAC_SHA256, HMAC_SHA1, HMAC_MD5,
-   *                      PBKDF_SHA1, MD5 and SCRYPT.
+   * 
+   * @param hashAlgorithm hash algorithm. Supported values are HMAC_SHA256,
+   *          HMAC_SHA1, HMAC_MD5, PBKDF_SHA1, MD5 and SCRYPT.
    * @param hashKey key of hash algorithm
    * @param users list of user accounts to be uploaded
    * @throws GitkitClientException for invalid request
@@ -307,53 +317,55 @@ public class GitkitClient {
    */
   public void uploadUsers(String hashAlgorithm, byte[] hashKey, List<GitkitUser> users)
       throws GitkitServerException, GitkitClientException {
-    rpcHelper.uploadAccount(hashAlgorithm, hashKey, users);
+    this.rpcHelper.uploadAccount(hashAlgorithm, hashKey, users);
   }
 
   /**
    * Deletes a user account at Gitkit server.
-   *
+   * 
    * @param user user to be deleted.
    * @throws GitkitClientException for invalid request
    * @throws GitkitServerException for server error
    */
   public void deleteUser(GitkitUser user) throws GitkitServerException, GitkitClientException {
-    deleteUser(user.getLocalId());
+    this.deleteUser(user.getLocalId());
   }
 
   /**
    * Deletes a user account at Gitkit server.
-   *
+   * 
    * @param localId user id to be deleted.
    * @throws GitkitClientException for invalid request
    * @throws GitkitServerException for server error
    */
   public void deleteUser(String localId) throws GitkitServerException, GitkitClientException {
-    rpcHelper.deleteAccount(localId);
+    this.rpcHelper.deleteAccount(localId);
   }
 
   /**
-   * Gets out-of-band response. Used by oob endpoint for ResetPassword and ChangeEmail operation.
-   * The web site needs to send user an email containing the oobUrl in the response. The user needs
-   * to click the oobUrl to finish the operation.
-   *
+   * Gets out-of-band response. Used by oob endpoint for ResetPassword and
+   * ChangeEmail operation. The web site needs to send user an email containing
+   * the oobUrl in the response. The user needs to click the oobUrl to finish
+   * the operation.
+   * 
    * @param req http request for the oob endpoint
    * @return the oob response.
    * @throws GitkitServerException
    */
-  public OobResponse getOobResponse(HttpServletRequest req)
-      throws GitkitServerException {
-    String gitkitToken = lookupCookie(req, cookieName);
-    return getOobResponse(req, gitkitToken);
+  public OobResponse getOobResponse(HttpServletRequest req) throws GitkitServerException {
+    String gitkitToken = this.lookupCookie(req, this.cookieName);
+    return this.getOobResponse(req, gitkitToken);
   }
 
   /**
-   * Gets out-of-band response. Used by oob endpoint for ResetPassword and ChangeEmail operation.
-   * The web site needs to send user an email containing the oobUrl in the response. The user needs
-   * to click the oobUrl to finish the operation.
-   *
+   * Gets out-of-band response. Used by oob endpoint for ResetPassword and
+   * ChangeEmail operation. The web site needs to send user an email containing
+   * the oobUrl in the response. The user needs to click the oobUrl to finish
+   * the operation.
+   * 
    * @param req http request for the oob endpoint
-   * @param gitkitToken Gitkit token of authenticated user, required for ChangeEmail operation
+   * @param gitkitToken Gitkit token of authenticated user, required for
+   *          ChangeEmail operation
    * @return the oob response.
    * @throws GitkitServerException
    */
@@ -362,22 +374,16 @@ public class GitkitClient {
     try {
       String action = req.getParameter("action");
       if ("resetPassword".equals(action)) {
-        String oobLink = buildOobLink(req, buildPasswordResetRequest(req), action);
-        return new OobResponse(
-            req.getParameter("email"),
-            null,
-            oobLink,
-            OobAction.RESET_PASSWORD);
+        String oobLink = this.buildOobLink(req, this.buildPasswordResetRequest(req), action);
+        return new OobResponse(req.getParameter("email"), null, oobLink, OobAction.RESET_PASSWORD);
       } else if ("changeEmail".equals(action)) {
         if (gitkitToken == null) {
           return new OobResponse("login is required");
         } else {
-          String oobLink = buildOobLink(req, buildChangeEmailRequest(req, gitkitToken), action);
-          return new OobResponse(
-              req.getParameter("oldEmail"),
-              req.getParameter("newEmail"),
-              oobLink,
-              OobAction.CHANGE_EMAIL);
+          String oobLink =
+              this.buildOobLink(req, this.buildChangeEmailRequest(req, gitkitToken), action);
+          return new OobResponse(req.getParameter("oldEmail"), req.getParameter("newEmail"),
+              oobLink, OobAction.CHANGE_EMAIL);
         }
       } else {
         return new OobResponse("unknown request");
@@ -409,10 +415,9 @@ public class GitkitClient {
   private String buildOobLink(HttpServletRequest req, JSONObject resetReq, String modeParam)
       throws GitkitClientException, GitkitServerException, JSONException {
     try {
-      JSONObject result = rpcHelper.getOobCode(resetReq);
+      JSONObject result = this.rpcHelper.getOobCode(resetReq);
       String code = result.getString("oobCode");
-      return widgetUrl + "?mode=" + modeParam + "&oobCode="
-          + URLEncoder.encode(code, "UTF-8");
+      return this.widgetUrl + "?mode=" + modeParam + "&oobCode=" + URLEncoder.encode(code, "UTF-8");
     } catch (UnsupportedEncodingException e) {
       // should never happen
       throw new GitkitServerException(e);
@@ -420,30 +425,23 @@ public class GitkitClient {
   }
 
   private JSONObject buildPasswordResetRequest(HttpServletRequest req) throws JSONException {
-    return new JSONObject()
-        .put("email", req.getParameter("email"))
-        .put("userIp", req.getRemoteAddr())
-        .put("challenge", req.getParameter("challenge"))
-        .put("captchaResp", req.getParameter("response"))
-        .put("requestType", "PASSWORD_RESET");
+    return new JSONObject().put("email", req.getParameter("email")).put("userIp",
+        req.getRemoteAddr()).put("challenge", req.getParameter("challenge")).put("captchaResp",
+        req.getParameter("response")).put("requestType", "PASSWORD_RESET");
   }
 
   private JSONObject buildChangeEmailRequest(HttpServletRequest req, String gitkitToken)
       throws JSONException {
-    return new JSONObject()
-        .put("email", req.getParameter("oldEmail"))
-        .put("userIp", req.getRemoteAddr())
-        .put("newEmail", req.getParameter("newEmail"))
-        .put("idToken", gitkitToken)
-        .put("requestType", "NEW_EMAIL_ACCEPT");
+    return new JSONObject().put("email", req.getParameter("oldEmail")).put("userIp",
+        req.getRemoteAddr()).put("newEmail", req.getParameter("newEmail")).put("idToken",
+        gitkitToken).put("requestType", "NEW_EMAIL_ACCEPT");
   }
 
   /**
    * Gitkit out-of-band actions.
    */
   public enum OobAction {
-    RESET_PASSWORD,
-    CHANGE_EMAIL
+    RESET_PASSWORD, CHANGE_EMAIL
   }
 
   /**
@@ -460,11 +458,10 @@ public class GitkitClient {
     private final String recipient;
 
     public OobResponse(String responseBody) {
-      this(null, null, Optional.<String>absent(), null, ERROR_PREFIX + responseBody + "\" }");
+      this(null, null, Optional.<String> absent(), null, ERROR_PREFIX + responseBody + "\" }");
     }
 
-    public OobResponse(String email, String newEmail, String oobUrl, OobAction oobAction)
-    {
+    public OobResponse(String email, String newEmail, String oobUrl, OobAction oobAction) {
       this(email, newEmail, Optional.of(oobUrl), oobAction, SUCCESS_RESPONSE);
     }
 
@@ -479,27 +476,27 @@ public class GitkitClient {
     }
 
     public Optional<String> getOobUrl() {
-      return oobUrl;
+      return this.oobUrl;
     }
 
     public OobAction getOobAction() {
-      return oobAction;
+      return this.oobAction;
     }
 
     public String getResponseBody() {
-      return responseBody;
+      return this.responseBody;
     }
 
     public String getEmail() {
-      return email;
+      return this.email;
     }
 
     public String getNewEmail() {
-      return newEmail;
+      return this.newEmail;
     }
 
     public String getRecipient() {
-      return recipient;
+      return this.recipient;
     }
   }
 
@@ -551,36 +548,32 @@ public class GitkitClient {
     }
 
     public GitkitClient build() {
-      return new GitkitClient(clientId, serviceAccountEmail, keyStream, widgetUrl, cookieName,
-          httpSender, serverApiKey);
+      return new GitkitClient(this.clientId, this.serviceAccountEmail, this.keyStream,
+          this.widgetUrl, this.cookieName, this.httpSender, this.serverApiKey);
     }
   }
 
   private List<GitkitUser> jsonToList(JSONArray accounts) throws JSONException {
     List<GitkitUser> list = Lists.newLinkedList();
     for (int i = 0; i < accounts.length(); i++) {
-      list.add(jsonToUser(accounts.getJSONObject(i)));
+      list.add(this.jsonToUser(accounts.getJSONObject(i)));
     }
     return list;
   }
 
   private GitkitUser jsonToUser(JSONObject jsonUser) throws JSONException {
-    GitkitUser user = new GitkitUser()
-        .setLocalId(jsonUser.getString("localId"))
-        .setEmail(jsonUser.getString("email"))
-        .setName(jsonUser.optString("displayName"))
-        .setPhotoUrl(jsonUser.optString("photoUrl"))
-        .setProviders(jsonUser.optJSONArray("providerUserInfo"));
+    GitkitUser user =
+        new GitkitUser().setLocalId(jsonUser.getString("localId")).setEmail(
+            jsonUser.getString("email")).setName(jsonUser.optString("displayName")).setPhotoUrl(
+            jsonUser.optString("photoUrl")).setProviders(jsonUser.optJSONArray("providerUserInfo"));
     if (jsonUser.has("providerUserInfo")) {
       JSONArray fedInfo = jsonUser.getJSONArray("providerUserInfo");
       List<GitkitUser.ProviderInfo> providerInfo = new ArrayList<GitkitUser.ProviderInfo>();
       for (int idp = 0; idp < fedInfo.length(); idp++) {
         JSONObject provider = fedInfo.getJSONObject(idp);
-        providerInfo.add(new GitkitUser.ProviderInfo(
-            provider.getString("providerId"),
-            provider.getString("federatedId"),
-            provider.optString("displayName"),
-            provider.optString("photoUrl")));
+        providerInfo.add(new GitkitUser.ProviderInfo(provider.getString("providerId"), provider
+            .getString("federatedId"), provider.optString("displayName"), provider
+            .optString("photoUrl")));
       }
       user.setProviders(providerInfo);
     }

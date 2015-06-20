@@ -1,17 +1,17 @@
 /*
  * Copyright 2014 Google Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package com.google.identitytoolkit;
@@ -35,12 +35,17 @@ public class GitkitUser {
   private String name;
   private String photoUrl;
   private String currentProvider;
+  private Integer issued;
+  private Integer expires;
+  private String displayName;
+  private Boolean emailVerified;
+
   private List<ProviderInfo> providers = Lists.newArrayList();
   private byte[] hash;
   private byte[] salt;
 
   public String getEmail() {
-    return email;
+    return this.email;
   }
 
   public GitkitUser setEmail(String email) {
@@ -49,7 +54,7 @@ public class GitkitUser {
   }
 
   public String getLocalId() {
-    return localId;
+    return this.localId;
   }
 
   public GitkitUser setLocalId(String localId) {
@@ -58,7 +63,7 @@ public class GitkitUser {
   }
 
   public String getName() {
-    return name;
+    return this.name;
   }
 
   public GitkitUser setName(String name) {
@@ -67,7 +72,7 @@ public class GitkitUser {
   }
 
   public String getPhotoUrl() {
-    return photoUrl;
+    return this.photoUrl;
   }
 
   public GitkitUser setPhotoUrl(String photoUrl) {
@@ -76,7 +81,7 @@ public class GitkitUser {
   }
 
   public String getCurrentProvider() {
-    return currentProvider;
+    return this.currentProvider;
   }
 
   public GitkitUser setCurrentProvider(String currentProvider) {
@@ -85,7 +90,43 @@ public class GitkitUser {
   }
 
   public List<ProviderInfo> getProviders() {
-    return providers;
+    return this.providers;
+  }
+
+  public Boolean isEmailVerified() {
+    return this.emailVerified;
+  }
+
+  public GitkitUser setEmailVerified(Boolean emailVerified) {
+    this.emailVerified = emailVerified;
+    return this;
+  }
+
+  public Integer getExpires() {
+    return this.expires;
+  }
+
+  public GitkitUser setExpires(Integer expires) {
+    this.expires = expires;
+    return this;
+  }
+
+  public String getDisplayName() {
+    return this.displayName;
+  }
+
+  public GitkitUser setDisplayName(String displayName) {
+    this.displayName = displayName;
+    return this;
+  }
+
+  public Integer getIssued() {
+    return this.issued;
+  }
+
+  public GitkitUser setIssued(Integer issued) {
+    this.issued = issued;
+    return this;
   }
 
   public GitkitUser setProviders(JSONArray providers) throws JSONException {
@@ -93,11 +134,9 @@ public class GitkitUser {
     if (providers != null) {
       for (int i = 0; i < providers.length(); i++) {
         JSONObject provider = providers.getJSONObject(i);
-        providerInfo.add(new ProviderInfo(
-            provider.getString("providerId"),
-            provider.getString("federatedId"),
-            provider.optString("displayName"),
-            provider.optString("photoUrl")));
+        providerInfo.add(new ProviderInfo(provider.getString("providerId"), provider
+            .getString("federatedId"), provider.optString("displayName"), provider
+            .optString("photoUrl")));
       }
     }
     this.providers = providerInfo;
@@ -111,7 +150,7 @@ public class GitkitUser {
   }
 
   public byte[] getHash() {
-    return hash;
+    return this.hash;
   }
 
   public GitkitUser setHash(byte[] hash) {
@@ -120,7 +159,7 @@ public class GitkitUser {
   }
 
   public byte[] getSalt() {
-    return salt;
+    return this.salt;
   }
 
   public GitkitUser setSalt(byte[] salt) {
@@ -130,19 +169,15 @@ public class GitkitUser {
 
   @Override
   public String toString() {
-    StringBuilder stringBuilder = new StringBuilder("[")
-        .append("\n\tlocalId: ").append(localId)
-        .append("\n\temail: ").append(email)
-        .append("\n\tname: ").append(name)
-        .append("\n\tphotoUrl: ").append(photoUrl)
-        .append("\n\tcurrent idp: ").append(currentProvider)
-        .append("\n\tproviders: [");
-    for (ProviderInfo providerInfo : providers) {
-      stringBuilder
-          .append("\n\t\tidp: ").append(providerInfo.getProviderId())
-          .append("\n\t\tfedId: ").append(providerInfo.getFederatedId())
-          .append("\n\t\tname: ").append(providerInfo.getName())
-          .append("\n\t\tphotoUrl: ").append(providerInfo.getPhotoUrl());
+    StringBuilder stringBuilder =
+        new StringBuilder("[").append("\n\tlocalId: ").append(this.localId).append("\n\temail: ")
+            .append(this.email).append("\n\tname: ").append(this.name).append("\n\tphotoUrl: ")
+            .append(this.photoUrl).append("\n\tcurrent idp: ").append("\n\temailVerified: ")
+            .append(this.emailVerified).append(this.currentProvider).append("\n\tproviders: [");
+    for (ProviderInfo providerInfo : this.providers) {
+      stringBuilder.append("\n\t\tidp: ").append(providerInfo.getProviderId()).append(
+          "\n\t\tfedId: ").append(providerInfo.getFederatedId()).append("\n\t\tname: ").append(
+          providerInfo.getName()).append("\n\t\tphotoUrl: ").append(providerInfo.getPhotoUrl());
     }
     return stringBuilder.append("]\n]").toString();
   }
@@ -164,19 +199,20 @@ public class GitkitUser {
     }
 
     public String getProviderId() {
-      return providerId;
+      return this.providerId;
     }
 
     public String getFederatedId() {
-      return federatedId;
+      return this.federatedId;
     }
 
     public String getName() {
-      return name;
+      return this.name;
     }
 
     public String getPhotoUrl() {
-      return photoUrl;
+      return this.photoUrl;
     }
   }
+
 }
