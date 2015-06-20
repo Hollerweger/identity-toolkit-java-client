@@ -141,7 +141,7 @@ public class GitkitClient {
 
     .setEmailVerified(
         jsonToken.has(JsonTokenHelper.ID_TOKEN_EMAIL_VERIFIED) ? jsonToken.get(
-            JsonTokenHelper.ID_TOKEN_PROVIDER).getAsBoolean() : null)
+            JsonTokenHelper.ID_TOKEN_EMAIL_VERIFIED).getAsBoolean() : null)
 
     .setDisplayName(
         jsonToken.has(JsonTokenHelper.ID_TOKEN_DISPLAY_NAME) ? jsonToken.get(
