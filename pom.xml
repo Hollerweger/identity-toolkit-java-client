@@ -3,7 +3,7 @@
 
   <groupId>com.google.identitytoolkit</groupId>
   <artifactId>gitkitclient</artifactId>
-  <version>1.2.3-SNAPSHOT</version>
+  <version>1.2.4-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>gitkitclient</name>
@@ -24,9 +24,9 @@
   <url>https://developers.google.com/identity-toolkit/v3/</url>
 
   <scm>
-    <url>https://github.com/google/identity-toolkit-java-client</url>
-    <connection>scm:git:git://github.com/google/identity-toolkit-java-client.git</connection>
-    <developerConnection>scm:git:git@github.com:google/identity-toolkit-java-client.git</developerConnection>
+    <url>https://github.com/hollerweger/identity-toolkit-java-client</url>
+    <connection>scm:git:git://github.com/hollerweger/identity-toolkit-java-client.git</connection>
+    <developerConnection>scm:git:git@github.com:hollerweger/identity-toolkit-java-client.git</developerConnection>
   </scm>
   
   <distributionManagement>
@@ -57,7 +57,7 @@
           <target>1.6</target>
         </configuration>
       </plugin>
-      <plugin>
+      <!-- <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-gpg-plugin</artifactId>
         <version>1.5</version>
@@ -70,7 +70,7 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
+      </plugin>  -->
     </plugins>
   </build>
   <dependencies>
